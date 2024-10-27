@@ -149,6 +149,30 @@ public class Contactmanager extends JFrame{
                     addressField.setText("");
                     }
                 });
+        deleteButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        int selectedRow = contactTable.getSelectedRow();
+                        if (selectedRow == -1) {
+                            JOptionPane.showMessageDialog(Contactmanager.this, "Please select a contact to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        
+                        int contactId = (int) contactTable.getValueAt(selectedRow, 0);
+                        
+                        int confirm = JOptionPane.showConfirmDialog(Contactmanager.this, "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_OPTION);
+                        if (confirm == JOptionPane.YES_OPTION){
+                            try {
+                                contactDAO.deleteContact(contactId);
+                                JOptionPane.showMessageDialog(Contactmanager.this, "Contact deleted successfully!");
+                                refreshContactTable();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                                JOptionPane.showMessageDialog(Contactmanager.this, "Error deleting contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                });
         }
 
     private int getSelectedContactId(int selectedRow) {
