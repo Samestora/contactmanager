@@ -109,7 +109,52 @@ public class Contactmanager extends JFrame{
                 addressField.setText("");
                }
            });
+
+        updateButton.addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                    int selectedRow = contactTable.getSelectedRow();
+                    if(selectedRow == -1) {
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Please select a contact to update.", "Select Error", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    
+                    int contactId = getSelectedContactId(selectedRow);
+                    
+                    String name = nameField.getText();
+                    String phone = phoneField.getText();
+                    String email = emailField.getText();
+                    String address = addressField.getText();
+                    
+                    //Validate input (pastikan tidak ada kolom yang kosong)
+                    if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || address.isEmpty()) {
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Please fill all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    
+                    //Call DAO to update contact
+                    try {
+                        contactDAO.updateContact(contactId, name, phone, email, address);
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Contact updated successfully!");
+                        refreshContactTable();
+                    } catch (SQLException ex){
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Error updating contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    
+                    //Clear input fields after updating
+                    nameField.setText("");
+                    phoneField.setText("");
+                    emailField.setText("");
+                    addressField.setText("");
+                    }
+                });
         }
+
+    private int getSelectedContactId(int selectedRow) {
+        return (int) contactTable.getValueAt(selectedRow, 0);
+    }
+    
     private void refreshContactTable() {
             try {
                 // Populate table with updated contact list
