@@ -98,7 +98,6 @@ public class Contactmanager extends JFrame{
                     JOptionPane.showMessageDialog(Contactmanager.this, "Contact added successfully!");
                     refreshContactTable();  // Refresh table after adding contact
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(Contactmanager.this, "Error adding contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
                 }
 
@@ -138,7 +137,6 @@ public class Contactmanager extends JFrame{
                         JOptionPane.showMessageDialog(Contactmanager.this, "Contact updated successfully!");
                         refreshContactTable();
                     } catch (SQLException ex){
-                        ex.printStackTrace();
                         JOptionPane.showMessageDialog(Contactmanager.this, "Error updating contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
                     }
                     
@@ -149,6 +147,7 @@ public class Contactmanager extends JFrame{
                     addressField.setText("");
                     }
                 });
+        
         deleteButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -158,16 +157,15 @@ public class Contactmanager extends JFrame{
                             return;
                         }
                         
-                        int contactId = (int) contactTable.getValueAt(selectedRow, 0);
+                        int contactId = getSelectedContactId(selectedRow);
                         
                         int confirm = JOptionPane.showConfirmDialog(Contactmanager.this, "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_OPTION);
                         if (confirm == JOptionPane.YES_OPTION){
                             try {
-                                contactDAO.deleteContact(contactId);
+                                contactDAO.deleteContact(contactId); // ID Starts at 1
                                 JOptionPane.showMessageDialog(Contactmanager.this, "Contact deleted successfully!");
                                 refreshContactTable();
                             } catch (SQLException ex) {
-                                ex.printStackTrace();
                                 JOptionPane.showMessageDialog(Contactmanager.this, "Error deleting contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
                             }
                         }
@@ -183,6 +181,11 @@ public class Contactmanager extends JFrame{
             try {
                 // Populate table with updated contact list
                 contactTable.setModel(ContactTableModel.buildTable(contactDAO.getAllContact()));
+                
+                // hide ID
+                contactTable.getColumnModel().getColumn(0).setMinWidth(0);
+                contactTable.getColumnModel().getColumn(0).setMaxWidth(0);
+                contactTable.getColumnModel().getColumn(0).setPreferredWidth(0);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -191,6 +194,7 @@ public class Contactmanager extends JFrame{
         SwingUtilities.invokeLater(() -> {
             Contactmanager gui = new Contactmanager();
             gui.setVisible(true);
+            gui.refreshContactTable();
         });
     }
 }

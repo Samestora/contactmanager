@@ -50,7 +50,7 @@ public class ContactDAO {
     }
     
     public void deleteContact(int id) throws SQLException {
-        String deleteContact = "DELETE FROM contacs WHERE id=?";
+        String deleteContact = "DELETE FROM contacts WHERE id=?";
         PreparedStatement pstmt = conn.prepareStatement(deleteContact);
         pstmt.setInt(1, id);
         pstmt.executeUpdate();
