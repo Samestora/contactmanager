@@ -5,10 +5,15 @@
 package com.pbo.contactmanager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
@@ -28,6 +34,8 @@ public class Contactmanager extends JFrame{
     private JButton addButton, updateButton, deleteButton;
     private JTable contactTable;
     private ContactDAO contactDAO;
+    
+    
     
     public Contactmanager(){
          try {
@@ -55,25 +63,43 @@ public class Contactmanager extends JFrame{
         updateButton = new JButton("Update Contact");
         deleteButton = new JButton("Delete Contact");
         
+        // Style
+        // No on hover
+        addButton.setBorderPainted(false);
+        updateButton.setBorderPainted(false);
+        deleteButton.setBorderPainted(false);
+        
+        // Colorful        
+        addButton.setBackground(Color.GREEN);
+        deleteButton.setBackground(Color.ORANGE);
+        updateButton.setBackground(Color.CYAN);
+
+        // Get resources and paste
+        addButton.setIcon(resizeImage("/add.png", 25, 25));
+        deleteButton.setIcon(resizeImage("/delete.png", 25, 25));
+        updateButton.setIcon(resizeImage("/update.png", 25, 25));
+        
+         // Nested Layout
+        JPanel panel = new JPanel(new GridLayout(6, 1)); // Main panel
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 3)); // Button panel
+
+        // Adding labels and fields to the main panel
+        panel.add(createChildPanel("Name:", nameField));
+        panel.add(createChildPanel("Phone:", phoneField));
+        panel.add(createChildPanel("Email:", emailField));
+        panel.add(createChildPanel("Address:", addressField));
+
+        // Adding buttons to the button panel
+        buttonPanel.add(addButton);
+        buttonPanel.add(updateButton);
+        buttonPanel.add(deleteButton);
+        panel.add(buttonPanel);
+        
         // Setting up the table to display contacts
         contactTable = new JTable();
-        
-         // Layout
-        JPanel panel = new JPanel(new GridLayout(6, 2));
-        panel.add(new JLabel("Name:"));
-        panel.add(nameField);
-        panel.add(new JLabel("Phone:"));
-        panel.add(phoneField);
-        panel.add(new JLabel("Email:"));
-        panel.add(emailField);
-        panel.add(new JLabel("Address:"));
-        panel.add(addressField);
-        panel.add(addButton);
-        panel.add(updateButton);
-        panel.add(deleteButton);
-        
         JScrollPane tablePane = new JScrollPane(contactTable);
         
+        // Set input pane and tablepane position based on layout
         add(panel, BorderLayout.NORTH);
         add(tablePane, BorderLayout.CENTER);
         
@@ -149,30 +175,50 @@ public class Contactmanager extends JFrame{
                 });
         
         deleteButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        int selectedRow = contactTable.getSelectedRow();
-                        if (selectedRow == -1) {
-                            JOptionPane.showMessageDialog(Contactmanager.this, "Please select a contact to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
-                            return;
-                        }
-                        
-                        int contactId = getSelectedContactId(selectedRow);
-                        
-                        int confirm = JOptionPane.showConfirmDialog(Contactmanager.this, "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_OPTION);
-                        if (confirm == JOptionPane.YES_OPTION){
-                            try {
-                                contactDAO.deleteContact(contactId); // ID Starts at 1
-                                JOptionPane.showMessageDialog(Contactmanager.this, "Contact deleted successfully!");
-                                refreshContactTable();
-                            } catch (SQLException ex) {
-                                JOptionPane.showMessageDialog(Contactmanager.this, "Error deleting contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = contactTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(Contactmanager.this, "Please select a contact to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                int contactId = getSelectedContactId(selectedRow); 
+                int confirm = JOptionPane.showConfirmDialog(Contactmanager.this, "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_OPTION);
+               if (confirm == JOptionPane.YES_OPTION){
+                    try {
+                        contactDAO.deleteContact(contactId); // ID Starts at 1
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Contact deleted successfully!");
+                        refreshContactTable();
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(Contactmanager.this, "Error deleting contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
                     }
-                });
+                }
+            }
+        });
+        
         }
+    
 
+    private ImageIcon resizeImage(String imagePath, int width, int height) {
+        try {
+            // Load the image
+            Image originalImage = ImageIO.read(this.getClass().getResource(imagePath));
+            // Resize the image
+            Image resizedImage = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(resizedImage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Or return a default icon
+        }
+    }
+    
+    private JPanel createChildPanel(String label, JTextField textField) {
+        JPanel childPanel = new JPanel(new GridLayout(1, 2));
+        childPanel.add(new JLabel(label, SwingConstants.CENTER));
+        childPanel.add(textField);
+        return childPanel;
+    }
+ 
     private int getSelectedContactId(int selectedRow) {
         return (int) contactTable.getValueAt(selectedRow, 0);
     }
