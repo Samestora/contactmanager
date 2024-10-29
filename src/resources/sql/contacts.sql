@@ -7,8 +7,8 @@
  * Created: Oct 26, 2024
  */
 
-CREATE TABLE contacts (
-    id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS contacts  (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
     phone VARCHAR(20),
     email   VARCHAR(100),

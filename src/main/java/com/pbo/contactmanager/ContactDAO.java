@@ -4,6 +4,9 @@
  */
 package com.pbo.contactmanager;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,8 +18,11 @@ import java.sql.Statement;
  *
  * @author LENOVO
  */
+
+// Data Access Object
 public class ContactDAO {
     private Connection conn;
+    public boolean New = false;
     
     public ContactDAO() throws SQLException{
         // Create database if not exists
@@ -24,29 +30,53 @@ public class ContactDAO {
         String user = "root";
         String pass = "";
         conn = DriverManager.getConnection(url, user, pass);
-        initDB();
+        
+        if (initDB() == false){
+            New = true;
+        }
         
         // Init table anyways
         url = "jdbc:mysql://localhost:3306/contact_manager?useSSL=false";
         conn = DriverManager.getConnection(url, user, pass);
         initIfBlank();
     }
-    private void initDB() throws SQLException {
-        String createDBSQL = "CREATE DATABASE IF NOT EXISTS contact_manager;";
+    
+    private void executeSqlFile(Connection connection, String filePath) {
+        try (
+                InputStream inputStream = getClass().getResourceAsStream(filePath);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                Statement statement = connection.createStatement()
+            ) {
+
+            StringBuilder sqlBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sqlBuilder.append(line);
+                if (line.endsWith(";")) { // Execute each statement
+                    statement.execute(sqlBuilder.toString());
+                    sqlBuilder.setLength(0); // Reset for the next statement
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private boolean initDB() throws SQLException {
+        String createDBSQL = "CREATE DATABASE contact_manager;"; // Intended to make an error
         try (Statement stmt = conn.createStatement()){
             stmt.execute(createDBSQL);
+            return false;
+        } catch (SQLException ex) {
+            return true; // It exists hooray
         }
     }
     private void initIfBlank() throws SQLException{
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS contacts (" +
-                                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                                "name VARCHAR(100), " +
-                                "phone VARCHAR(15), " +
-                                "email VARCHAR(100), " +
-                                "address VARCHAR(255))";
-        try (Statement stmt = conn.createStatement()){
-            stmt.execute(createTableSQL);   
-        }
+        executeSqlFile(conn, "/sql/contacts.sql");
+    }
+    
+    public void initDummy() throws SQLException {
+        executeSqlFile(this.conn, "/sql/dummy.sql");
     }
     
     // Real Methods!

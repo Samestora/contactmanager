@@ -35,16 +35,16 @@ public class Contactmanager extends JFrame{
     private JTable contactTable;
     private ContactDAO contactDAO;
     
-    
-    
     public Contactmanager(){
-         try {
+        // Ini buat kalo baru make pertama kali
+        try {
             contactDAO = new ContactDAO(); // Ensure this doesn't throw an exception
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Database connection failed.", "Error", JOptionPane.ERROR_MESSAGE);
             return;  // Exit if DB connection fails
         }
+        // END
          
         setTitle("Contact Manager Community");
         setSize(1600, 1200);
@@ -75,9 +75,9 @@ public class Contactmanager extends JFrame{
         updateButton.setBackground(Color.CYAN);
 
         // Get resources and paste
-        addButton.setIcon(resizeImage("/add.png", 25, 25));
-        deleteButton.setIcon(resizeImage("/delete.png", 25, 25));
-        updateButton.setIcon(resizeImage("/update.png", 25, 25));
+        addButton.setIcon(resizeImage("/images/add.png", 25, 25));
+        deleteButton.setIcon(resizeImage("/images/delete.png", 25, 25));
+        updateButton.setIcon(resizeImage("/images/update.png", 25, 25));
         
          // Nested Layout
         JPanel panel = new JPanel(new GridLayout(6, 1)); // Main panel
@@ -194,10 +194,23 @@ public class Contactmanager extends JFrame{
                     }
                 }
             }
-        });
-        
+        }); 
+        NewInit();
+    }
+    private void NewInit() {
+        if (contactDAO.New) {
+            int confirm = JOptionPane.showConfirmDialog(Contactmanager.this, "It seems that you're new, Do you want to add dummy contacts?", "Adding Dummy Contacts", JOptionPane.YES_OPTION);
+            if (confirm == JOptionPane.YES_OPTION){
+                try {
+                    contactDAO.initDummy();
+                    JOptionPane.showMessageDialog(Contactmanager.this, "Contact added successfully!");
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(Contactmanager.this, "Error deleting contact.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
         }
-    
+    }
 
     private ImageIcon resizeImage(String imagePath, int width, int height) {
         try {
